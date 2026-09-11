@@ -4,6 +4,8 @@ import {resolve} from 'node:path';
 
 const dataDir=process.env.GURA_DATA_DIR;
 const ownerKey=process.env.OWNER_SETUP_KEY;
+if(!publicOrigin)throw new Error('Set PUBLIC_ORIGIN to the public Railway website address.');
+const publicOrigin=process.env.PUBLIC_ORIGIN;
 if(!dataDir)throw new Error('Set GURA_DATA_DIR to your Railway Volume mount path, for example /data.');
 if(!ownerKey)throw new Error('Set OWNER_SETUP_KEY in Railway Variables before starting GURA.');
 
@@ -17,11 +19,12 @@ const workerEnvFile=resolve('/tmp/gura-worker.env');
 writeFileSync(workerEnvFile,'OWNER_SETUP_KEY='+JSON.stringify(ownerKey)+'\n',{mode:0o600});
 const built=JSON.parse(readFileSync('dist/server/wrangler.json','utf8'));
 const migrationConfig=resolve(runtimeDir,'migrations.json');
-writeFileSync(migrationConfig,JSON.stringify({
-  name:'gura-railway',
-  compatibility_date:built.compatibility_date,
-  d1_databases:built.d1_databases.map((binding)=>({...binding,migrations_dir:resolve('drizzle')}))
-},null,2));
+writeFileSync(
+  workerEnvFile,
+  'OWNER_SETUP_KEY='+JSON.stringify(ownerKey)+'\n'+
+  'PUBLIC_ORIGIN='+JSON.stringify(publicOrigin)+'\n',
+  {mode:0o600}
+);
 
 const shared=['--import','./scripts/sites-env.mjs','./node_modules/wrangler/bin/wrangler.js'];
 const environment={

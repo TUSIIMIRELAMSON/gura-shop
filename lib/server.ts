@@ -33,7 +33,13 @@ export function publicUser(u:any){if(!u)return null;const {password,...safe}=u;r
 export function sessionCookie(req:Request,token:string,maxAge=604800){return `gura_session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${new URL(req.url).protocol==='https:'?'; Secure':''}`;}
 export async function signIn(req:Request,id:string){const token=randomToken();await db().batch([statement('DELETE FROM sessions WHERE expires<?',Date.now()),statement('INSERT INTO sessions(token,user_id,expires) VALUES(?,?,?)',await digest(token),id,Date.now()+604800000)]);return sessionCookie(req,token);}
 export async function throttle(req:Request,key:string){const ip=req.headers.get('cf-connecting-ip')||'local';for(const suffix of ['ip:'+ip,'account:'+key]){const h=await digest(suffix);const now=Date.now();await run('INSERT INTO login_limits(key,attempts,expires) VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET attempts=CASE WHEN expires<? THEN 1 ELSE attempts+1 END,expires=CASE WHEN expires<? THEN excluded.expires ELSE expires END',h,now+900000,now,now);const row=await one('SELECT attempts FROM login_limits WHERE key=?',h);if(row.attempts>(suffix.startsWith('ip:')?60:12))fail(429,'Too many attempts. Please try again in 15 minutes.');}}
-export function checkWrite(req:Request){const origin=req.headers.get('origin');if(origin&&origin!==new URL(req.url).origin)fail(403,'Request origin is not allowed.');if(req.headers.get('x-gura-action')!=='1')fail(403,'Refresh this page and try again.');}
+export function checkWrite(req:Request){
+ const origin=req.headers.get('origin');
+ const requestOrigin=new URL(req.url).origin;
+ const publicOrigin=((env as unknown as Record<string,string>).PUBLIC_ORIGIN||'').replace(/\/+$/,'');
+ if(origin&&origin!==requestOrigin&&origin!==publicOrigin)fail(403,'Request origin is not allowed.');
+ if(req.headers.get('x-gura-action')!=='1')fail(403,'Refresh this page and try again.');
+}
 export async function body(req:Request){if(Number(req.headers.get('content-length'))>1000000)fail(413,'This request is too large.');try{return await req.json() as any;}catch{fail(400,'Invalid request.');}}
 export function ownerSetupKey(){return (env as unknown as Record<string,string>).OWNER_SETUP_KEY||'';}
 export async function shopSettings(){const rows=await all('SELECT key,value FROM settings');const s:any={name:'GURA',currency:'UGX',delivery_fee:0,gold_description:''};for(const r of rows)s[r.key]=r.key==='delivery_fee'?Number(r.value):r.value;return s;}
