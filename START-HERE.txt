@@ -1,0 +1,53 @@
+GURA - START HERE
+=================
+
+Your product catalog is empty. You will add your own products as the shop owner.
+
+HOSTED PUBLICATION STATUS
+The private deployment was submitted but had not confirmed completion as of 11 September 2026, 12:18 UTC. The address below is the assigned address, not a verified live link yet. Use the local setup instructions to run the shop now.
+
+ASSIGNED PRIVATE SHOP ADDRESS
+https://gura-mclam-shop.lilac-melon-4934.chatgpt.site
+
+1. Open the link while signed into your ChatGPT account.
+2. Select "Set up shop owner" at the bottom of the shop page.
+3. Enter this one-time OWNER SETUP CODE:
+
+5d906efd15cc18e83ce2b3df298bb13d65ec96cc6af94812
+
+4. Choose your own name, email and password (at least 10 characters).
+5. Open Manage shop > Shop settings to choose currency and delivery fee.
+6. Open Products > Add product. Enter price, unit, quantity and your photos.
+7. Turn on Publish in the shop and save.
+
+Keep this setup code private. It is not your password. Owner setup closes after the first owner account is created. No default account or password has been created.
+
+CUSTOMERS
+Customers register from Sign in > Create an account. Their passwords require at least 6 characters. The current hosted version is private to you; it has not been opened to other customers.
+
+RUN YOUR OWN LOCAL COPY ON WINDOWS
+Open the GURA folder inside this ZIP. Read GURA/README.md for the complete instructions.
+Install Node.js 22.13 or newer, then open PowerShell in that GURA folder and run:
+
+npm install -g pnpm@11.25.0
+pnpm install --frozen-lockfile
+pnpm setup:local
+pnpm dev
+
+The LOCAL setup command prints a DIFFERENT owner setup code for your local shop. Use that local code when setting up localhost. The local and hosted shops have separate databases and uploaded photos.
+
+THIS RELEASE
+- Empty catalog with 16 navigation categories.
+- Five mobile tabs and responsive desktop layout.
+- Swipeable product photos and recent orders.
+- Real customer/owner accounts, saved carts and order management.
+- No preset photo-count limit; 20 MB per image.
+- Pay-on-delivery checkout. Card/mobile-money payments are not connected.
+- Gura Gold information/interest only; no paid subscription.
+- In-app order status; email/SMS/push delivery are not connected.
+- English interface.
+- Installable web app; no native APK or iOS package.
+
+Validation: successful build, TypeScript check, and 36 isolated API/database checks. Test fixtures are never inserted into your real shop. Browser/device interaction has not been tested in this environment.
+
+The setup code in this file is private. This file sits outside the GURA source folder so it is not part of the project source repository. Do not publish or forward it.

@@ -1,0 +1,59 @@
+GURA — owner sign-in update
+
+Why the message appeared
+The dashboard kept its initial login in memory. Signing into a customer account
+in another tab changes the browser's shared session cookie, while the old page
+could still say “Shop owner”. This is one reproducible cause of the screenshot;
+the screenshot alone cannot establish what changed your particular session.
+
+Try this immediately
+1. Copy any unsaved product details before leaving the current page.
+2. Open a private browser window and open the same local shop address.
+3. Choose Sign in and enter the email and password you used to create the owner.
+   “Create an account” makes a customer account. Owner setup is only used once.
+4. Open Manage shop and add your product. Keep customer testing in a separate
+   browser profile/window so it cannot change the owner's active session.
+
+Install the fix on an existing local shop (Windows)
+1. Stop the existing app in PowerShell with Ctrl+C.
+2. Extract this updated ZIP into a separate temporary folder.
+3. Copy the following files from its GURA folder into the SAME relative paths
+   in your existing project folder. Replace these source files when asked:
+
+   app\shop.tsx
+   app\admin.tsx
+   app\api\[...path]\route.ts
+   lib\server.ts
+   lib\client-api.ts                 (new file)
+   tests\integration.mjs
+   tests\client-session.mjs         (new file)
+   README.md
+
+   Keep using your original project folder. Its .wrangler\state folder holds
+   your accounts, products and photos; .dev.vars holds local configuration.
+   Leave both in place. No database reset, migration or owner setup is needed.
+4. In PowerShell, in your ORIGINAL project folder, run:
+
+   pnpm dev
+
+5. Refresh the shop page (Ctrl+F5) and sign in with your existing owner email.
+   The owner dashboard now shows that email so you can check which account is
+   active. This update does not change or recover your password.
+
+What changed
+- The app checks the current login when a tab becomes active or another tab
+  signs in or out.
+- Old account screens are cleared when the active account changes. Save or copy
+  drafts before switching accounts; unsaved forms/photos are not recovered.
+- A stale tab cannot submit changes for a newly selected account.
+- Sign-in errors explain whether the session ended or a customer is signed in.
+- Failed product saves clear the “Saving product details…” message, and photo
+  uploading stops if the account changes.
+- Owner permission checks remain on the server. Customer passwords still need
+  6 characters; owner passwords still need 10. No products are preloaded.
+
+Validation
+50 isolated server/client checks pass, including stale owner sessions, customer
+access rejection, sign-in recovery, photo uploads, stock and order protections.
+TypeScript checking and the production build also pass. These checks do not
+inspect or modify the shop running on your computer.
