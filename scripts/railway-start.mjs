@@ -12,8 +12,9 @@ const runtimeDir=resolve(dataDir,'runtime');
 mkdirSync(stateDir,{recursive:true});
 mkdirSync(runtimeDir,{recursive:true});
 
-// Wrangler loads worker secrets from this ignored, container-local file.
-if(!existsSync('.dev.vars'))writeFileSync('.dev.vars','OWNER_SETUP_KEY='+JSON.stringify(ownerKey)+'\n',{mode:0o600});
+// Pass Railway's owner setup key securely into the local Worker.
+const workerEnvFile=resolve('/tmp/gura-worker.env');
+writeFileSync(workerEnvFile,'OWNER_SETUP_KEY='+JSON.stringify(ownerKey)+'\n',{mode:0o600});
 const built=JSON.parse(readFileSync('dist/server/wrangler.json','utf8'));
 const migrationConfig=resolve(runtimeDir,'migrations.json');
 writeFileSync(migrationConfig,JSON.stringify({
@@ -32,6 +33,6 @@ const environment={
 const migrated=spawnSync(process.execPath,[...shared,'d1','migrations','apply','DB','--local','--config',migrationConfig,'--persist-to',stateDir],{stdio:'inherit',env:environment});
 if(migrated.status!==0)process.exit(migrated.status||1);
 
-const worker=spawn(process.execPath,[...shared,'dev','--config','dist/server/wrangler.json','--local','--persist-to',stateDir,'--ip','0.0.0.0','--port',String(process.env.PORT||3000),'--inspector-port','0'],{stdio:'inherit',env:environment});
+const worker=spawn(process.execPath,[...shared,'dev','--env-file',workerEnvFile,'--config','dist/server/wrangler.json','--local','--persist-to',stateDir,'--ip','0.0.0.0','--port',String(process.env.PORT||3000),'--inspector-port','0'],{stdio:'inherit',env:environment});
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>worker.kill(signal));
 worker.on('exit',(code)=>process.exit(code??1));
