@@ -1,6 +1,6 @@
 export const CATEGORIES = ['Fashions / Accessories','Food','Household goods','Digital appliances','Beauty','Home decor','Maternity / Baby / Kids','Sports / Leisure','Kitchenware','Toys / Hobbies','Automotive','Pet supplies','Stationery / Office','Fitness / Sports nutrition','Books / Music / DVDs','Benefits / Service'];
 export const STATUSES = ['Pending','Confirmed','Packed','On the way','Delivered','Cancelled'];
-export type Product = {id:string;name:string;description:string;brand:string;category:string;price:number;unit:string;quantity:number;active:number;version:number;image:string|null;image_count:number;images?:Photo[]};
+export type Product = {id:string;name:string;description:string;brand:string;category:string;subcategory?:string;price:number;unit:string;quantity:number;active:number;version:number;image:string|null;image_count:number;images?:Photo[]};
 export type Photo = {id:string;product_id:string;object_key:string;content_type:string;position:number};
 export type User = {id:string;name:string;email:string;phone:string;role:string;avatar:string|null;recipient:string;address:string;delivery_phone:string;country:string;language:string;notifications:number;gold_requested:number};
 export type Order = {id:string;user_id:string;status:string;total:number;delivery_fee:number;currency:string;paid:number;delivery_date:string;created_at:number;recipient:string;address:string;phone:string;items:OrderItem[]};

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
+import {testStorefrontFeatures} from './storefront-features.mjs';
 import {testClientSession} from './client-session.mjs';
-import {readFile,mkdtemp,rm} from 'node:fs/promises';
+import {readFile,readdir,mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -16,7 +17,7 @@ let passed=0;
 const check=(condition,message)=>{assert.ok(condition,message);passed++;console.log('PASS '+message);};
 async function call(path,method='GET',data,cookie='',extra={}){const res=await mf.dispatchFetch('https://gura.test/api/'+path,{method,headers:{...(method!=='GET'?{'x-gura-action':'1','origin':'https://gura.test'}:{}),...(cookie?{cookie}:{}),...(data&&!(data instanceof FormData)?{'content-type':'application/json'}:{}),...extra},body:data?(data instanceof FormData?data:JSON.stringify(data)):undefined});const json=await res.json().catch(()=>({}));return {status:res.status,data:json,cookie:res.headers.get('set-cookie')?.split(';')[0]||'',headers:res.headers};}
 try{
- const database=await mf.getD1Database('DB');const migration=await readFile('drizzle/0000_cynical_skrulls.sql','utf8');for(const sql of migration.split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await database.prepare(sql).run();
+ const database=await mf.getD1Database('DB');for(const file of (await readdir('drizzle')).filter(name=>/^\d+.*\.sql$/.test(name)).sort()){const migration=await readFile('drizzle/'+file,'utf8');for(const sql of migration.split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await database.prepare(sql).run();}
  const initial=await call('bootstrap');check(initial.data.needsOwner===true&&initial.data.user===null,'Fresh shop has no owner or signed-in user');check((await call('products')).data.products.length===0,'Catalog starts completely empty');
  const owner={name:'Owner test',email:'owner@example.test',password:'1234567890',setup_key:'test-owner-setup-code'};
  check((await call('auth/owner-setup','POST',{...owner,setup_key:'wrong'})).status===403,'Owner setup rejects incorrect setup code');
@@ -31,6 +32,7 @@ try{
  check((await call('admin/products','POST',{},customer.cookie)).status===403,'Customer cannot create products');
  check((await call('admin/overview')).status===401,'Anonymous visitors cannot use owner APIs');
  check((await call('profile','PATCH',{},customer.cookie,{origin:'https://attacker.test'})).status===403,'Cross-origin changes are rejected');
+ await testStorefrontFeatures(call,database,check,admin,customer);
  const input={name:'Temporary test item',description:'Only exists in isolated test storage',brand:'Test brand',category:'Food',price:'120.50',unit:'pack',quantity:1,active:true};
  check((await call('admin/products','POST',{...input,price:'-1'},admin.cookie)).status===400,'Negative product prices are rejected');
  check((await call('admin/products','POST',{...input,quantity:-1},admin.cookie)).status===400,'Negative stock is rejected');
