@@ -4,10 +4,11 @@ import {resolve} from 'node:path';
 
 const dataDir=process.env.GURA_DATA_DIR;
 const ownerKey=process.env.OWNER_SETUP_KEY;
-if(!publicOrigin)throw new Error('Set PUBLIC_ORIGIN to the public Railway website address.');
 const publicOrigin=process.env.PUBLIC_ORIGIN;
+
 if(!dataDir)throw new Error('Set GURA_DATA_DIR to your Railway Volume mount path, for example /data.');
 if(!ownerKey)throw new Error('Set OWNER_SETUP_KEY in Railway Variables before starting GURA.');
+if(!publicOrigin)throw new Error('Set PUBLIC_ORIGIN to the public Railway website address.');
 
 const stateDir=resolve(dataDir,'wrangler-state');
 const runtimeDir=resolve(dataDir,'runtime');
